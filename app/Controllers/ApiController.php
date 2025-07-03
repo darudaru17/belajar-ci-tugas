@@ -37,19 +37,25 @@ public function index()
         $value = $value->getValue();
     });
 
-    if(array_key_exists("Key", $headers)){
-        if ($headers["Key"] == $this->apiKey) {
-            $penjualan = $this->transaction->findAll();
-            
-            foreach ($penjualan as &$pj) {
-                $pj['details'] = $this->transaction_detail->where('transaction_id', $pj['id'])->findAll();
+    if (array_key_exists("Key", $headers) && $headers["Key"] == $this->apiKey) {
+        $penjualan = $this->transaction->findAll();
+        
+        foreach ($penjualan as &$pj) {
+            // Ambil detail
+            $details = $this->transaction_detail->where('transaction_id', $pj['id'])->findAll();
+            $pj['details'] = $details;
+
+            // Hitung total item
+            $jumlah_item = 0;
+            foreach ($details as $d) {
+                $jumlah_item += $d['jumlah'];
             }
-
-            $data['status'] = ["code" => 200, "description" => "OK"];
-            $data['results'] = $penjualan;
-
+            $pj['jumlah_item'] = $jumlah_item; // ✅ Tambahan sesuai soal 4
         }
-    } 
+
+        $data['status'] = ["code" => 200, "description" => "OK"];
+        $data['results'] = $penjualan;
+    }
 
     return $this->respond($data);
 }

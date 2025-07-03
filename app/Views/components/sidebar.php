@@ -26,14 +26,14 @@
                     <span>Produk</span>
                 </a>
             </li><!-- End Produk Nav -->
-        
 
             <li class="nav-item">
-        <a class="nav-link <?php echo (uri_string() == 'profile') ? "" : "collapsed" ?>" href="profile">
-            <i class="bi bi-person"></i>
-            <span>Profile</span>
-        </a>
-    </li><!-- End Profile Nav -->
+                <a class="nav-link <?php echo (uri_string() == 'diskon') ? "" : "collapsed" ?>" href="diskon">
+                    <i class="bi bi-cash-coin"></i>
+                    <span>Manajemen Diskon</span>
+                </a>
+            </li><!-- End Diskon Nav -->
+
             <li class="nav-item">
                 <a class="nav-link <?php echo (uri_string() == 'kategori') ? "" : "collapsed" ?>" href="kategori">
                     <i class="bi bi-tags"></i>

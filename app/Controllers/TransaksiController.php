@@ -139,40 +139,52 @@ public function getCost()
 }
 public function buy()
 {
-    if ($this->request->getPost()) { 
+    if ($this->request->getPost()) {
+        $diskon = session()->get('diskon') ?? 0; // Ambil dari session
+
         $dataForm = [
-            'username' => $this->request->getPost('username'),
-            'total_harga' => $this->request->getPost('total_harga'),
-            'alamat' => $this->request->getPost('alamat'),
-            'ongkir' => $this->request->getPost('ongkir'),
-            'status' => 0,
-            'created_at' => date("Y-m-d H:i:s"),
-            'updated_at' => date("Y-m-d H:i:s")
+            'username'     => $this->request->getPost('username'),
+            'total_harga'  => $this->request->getPost('total_harga'),
+            'alamat'       => $this->request->getPost('alamat'),
+            'ongkir'       => $this->request->getPost('ongkir'),
+            'diskon'       => $diskon, // ⬅ tambahkan baris ini
+            'status'       => 0,
+            'created_at'   => date("Y-m-d H:i:s"),
+            'updated_at'   => date("Y-m-d H:i:s")
         ];
 
         $this->transaction->insert($dataForm);
-
         $last_insert_id = $this->transaction->getInsertID();
 
-        foreach ($this->cart->contents() as $value) {
-            $dataFormDetail = [
-                'transaction_id' => $last_insert_id,
-                'product_id' => $value['id'],
-                'jumlah' => $value['qty'],
-                'diskon' => 0,
-                'subtotal_harga' => $value['qty'] * $value['price'],
-                'created_at' => date("Y-m-d H:i:s"),
-                'updated_at' => date("Y-m-d H:i:s")
-            ];
+        // Simpan detail transaksi
+       $diskon = session()->get('diskon') ?? 0;
+$totalCart = $this->cart->total(); // total harga semua item sebelum diskon
 
-            $this->transaction_detail->insert($dataFormDetail);
-        }
+foreach ($this->cart->contents() as $value) {
+    // Hitung proporsi diskon untuk item ini
+    $itemSubtotal = $value['qty'] * $value['price'];
+    $itemDiskon = ($itemSubtotal / $totalCart) * $diskon;
+
+    $dataFormDetail = [
+        'transaction_id' => $last_insert_id,
+        'product_id'     => $value['id'],
+        'jumlah'         => $value['qty'],
+        'diskon'         => round($itemDiskon), // diskon proporsional
+        'subtotal_harga' => $itemSubtotal - round($itemDiskon),
+        'created_at'     => date("Y-m-d H:i:s"),
+        'updated_at'     => date("Y-m-d H:i:s")
+    ];
+
+    $this->transaction_detail->insert($dataFormDetail);
+}
+
 
         $this->cart->destroy();
- 
-        return redirect()->to(base_url());
+        return redirect()->to(base_url())->with('success', 'Transaksi berhasil!');
     }
 }
+
+
 
 
 }
